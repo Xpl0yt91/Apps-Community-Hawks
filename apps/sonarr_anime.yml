@@ -6,8 +6,8 @@
 
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'sonarr'
-        intport: '8989'
+        pgrole: 'sonarr_anime'
+        intport: '8987'
         extport: '8989'
         image: 'linuxserver/sonarr:develop'
 
