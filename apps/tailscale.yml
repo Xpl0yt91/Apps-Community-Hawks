@@ -1,0 +1,39 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    # FACTS #######################################################################
+    - name: 'Set Known Facts'
+      set_fact:
+        pgrole: 'tailscale'
+        image: 'deasmi/unraid-tailscale:latest'
+    # CORE (MANDATORY) ############################################################
+    - name: 'Setting {{pgrole}} ENV'
+      set_fact:
+        pg_env:
+          PUID: '1000'
+          PGID: '1000'
+          UP_FLAGS: '--advertise-exit-node'
+     ########## DEPLOYMENT ##########
+    - name: 'Deploying {{pgrole}}'
+      docker_container:
+        name: '{{pgrole}}'
+        hostname: '{{pgrole}}'
+        image: '{{image}}'
+        pull: yes
+        volumes:
+          - '/opt/appdata/{{pgrole}}/:/state'
+        env: '{{pg_env}}'
+        capabilities:
+          - 'NET_ADMIN'
+        privileged: true
+        restart_policy: unless-stopped
+        security_opts:
+          - apparmor:unconfined
+        state: started
+        network_mode: 'host'
+    - name: 'enable IP Forwarding'
+      shell: |
+        echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf 
+        echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.conf
+        sudo sysctl -p /etc/sysctl.conf
