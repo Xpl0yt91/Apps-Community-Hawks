@@ -1,15 +1,22 @@
+#!/bin/bash
+#
+# Title:      PGBlitz (Reference Title File)
+# Author(s):  Admin9705
+# URL:        https://pgblitz.com - http://github.pgblitz.com
+# GNU:        General Public License v3.0
+################################################################################
 ---
 - hosts: localhost
   gather_facts: false
   tasks:
-    # FACTS #######################################################################
+    # CORE (MANDATORY) DO NOT CHANGE ###########################################
 
     - name: 'Set Known Facts'
       set_fact:
         pgrole: 'sonarr-anime'
         intport: '8989'
         extport: '8987'
-        image: 'linuxserver/sonarr:develop'
+        image: 'linuxserver/sonarr:latest'
 
     # CORE (MANDATORY) ############################################################
     - name: 'Including cron job'
@@ -17,14 +24,13 @@
 
     - name: 'Including plugins'
       include_tasks: '/opt/coreapps/apps/_plugins.yml'
-
     # LABELS ######################################################################
     - name: 'Adding Traefik'
       set_fact:
         pg_labels:
           traefik.enable: 'true'
           traefik.port: '{{intport}}'
-          traefik.frontend.auth.forward.address: 'http://authelia:9091/api/verify?rd=https://authelia.{{domain.stdout}}/'
+          traefik.frontend.auth.forward.address: '{{auth}}'
           traefik.frontend.rule: 'Host:{{pgrole}}.{{domain.stdout}}{{tldset}}{{cname}}'
           traefik.frontend.headers.SSLHost: '{{domain.stdout}}'
           traefik.frontend.headers.SSLRedirect: 'true'
